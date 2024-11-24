@@ -21,7 +21,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.io.*;
 
-
 public class Main extends JFrame implements ActionListener, ChangeListener {
     // Define character sets for password generation
     @Serial
@@ -49,9 +48,7 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
     public Main() {
         setTitle("Password Generator");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         JPanel panel = new JPanel();
-
         // Initialize user interface components
         upperCaseCheckbox = new JCheckBox("Include Uppercase Letters");
         lowerCaseCheckbox = new JCheckBox("Include Lowercase Letters");
@@ -60,7 +57,6 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         upperCaseCheckbox.setSelected(true);
         lowerCaseCheckbox.setSelected(true);
         digitsCheckbox.setSelected(true);
-
 
         lengthSlider = new JSlider(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH);
         lengthSlider.setMajorTickSpacing(2);
@@ -110,13 +106,9 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == generateButton) {
-
             // Get the desired password length from the user
-
             int passwordLength = Integer.parseInt(lengthTextField.getText());
-
             // Check if the password length is within the allowed range
-
             if (passwordLength < MIN_PASSWORD_LENGTH || passwordLength > MAX_PASSWORD_LENGTH) {
                 JOptionPane.showMessageDialog(this, "Invalid password length. Length should be between " +
                         MIN_PASSWORD_LENGTH + " and " + MAX_PASSWORD_LENGTH + ".", "Invalid Input", JOptionPane.ERROR_MESSAGE);
@@ -133,10 +125,8 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
                 JOptionPane.showMessageDialog(this, "Please select at least one character set.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
             // Generate the password based on user preferences
             String password = generatePassword(passwordLength, includeUpperCase, includeLowerCase,            includeDigits, includeSpecial);
-
             // Display the generated password
             passwordLabel.setText("Generated Password: " + password);
         } else if (e.getSource() == copyButton) {
@@ -191,7 +181,6 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
             int index = random.nextInt(characters.length());
             password.append(characters.charAt(index));
         }
-
         return password.toString();
     }
 
@@ -262,7 +251,6 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
     public void Search(int count,String[] Accvalues,String[] Passwords){
         String textACC = JOptionPane.showInputDialog("Enter the Account for  which the Password u wanna  know !");
