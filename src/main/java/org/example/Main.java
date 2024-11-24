@@ -6,6 +6,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.SecureRandom;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -18,12 +20,11 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
+
 
 public class Main extends JFrame implements ActionListener, ChangeListener {
     // Define character sets for password generation
+    @Serial
     private static final long serialVersionUID = 1L;
     private static final String CHARACTERS_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String CHARACTERS_LOWER = "abcdefghijklmnopqrstuvwxyz";
@@ -33,16 +34,17 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
     private static final int MAX_PASSWORD_LENGTH = 20;
 
     // User interface components
-    private JCheckBox upperCaseCheckbox;
-    private JCheckBox lowerCaseCheckbox;
-    private JCheckBox digitsCheckbox;
-    private JCheckBox specialCheckbox;
-    private JSlider lengthSlider;
-    private JTextField lengthTextField;
-    private JButton generateButton;
-    private JButton copyButton;
-    private JButton copyandsave;
-    private JLabel passwordLabel;
+    private final JCheckBox upperCaseCheckbox;
+    private final JCheckBox lowerCaseCheckbox;
+    private final JCheckBox digitsCheckbox;
+    private final JCheckBox specialCheckbox;
+    private final JSlider lengthSlider;
+    private final JTextField lengthTextField;
+    private final JButton generateButton;
+    private final JButton copyButton;
+    private final JButton copyandsave;
+    private final JButton Findsavedpassword;
+    private final JLabel passwordLabel;
 
     public Main() {
         setTitle("Password Generator");
@@ -55,6 +57,10 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         lowerCaseCheckbox = new JCheckBox("Include Lowercase Letters");
         digitsCheckbox = new JCheckBox("Include Digits");
         specialCheckbox = new JCheckBox("Include Special Characters");
+        upperCaseCheckbox.setSelected(true);
+        lowerCaseCheckbox.setSelected(true);
+        digitsCheckbox.setSelected(true);
+
 
         lengthSlider = new JSlider(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH);
         lengthSlider.setMajorTickSpacing(2);
@@ -75,6 +81,9 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         copyandsave = new JButton("Copy and Save Password");
         copyandsave.addActionListener(this);
 
+        Findsavedpassword = new JButton("Find Password");
+        Findsavedpassword.addActionListener(this);
+
         passwordLabel = new JLabel();
 
         // Add components to the panel
@@ -88,12 +97,14 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         panel.add(generateButton);
         panel.add(copyButton);
         panel.add(copyandsave);
+        panel.add(Findsavedpassword);
         panel.add(passwordLabel);
 
         add(panel, BorderLayout.CENTER);
         pack();
         setVisible(true);
         setSize(300, 400);
+        setResizable(false);
     }
 
     @Override
@@ -141,7 +152,8 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
             if (!password.isEmpty()) {
                 savetofile(password);
             }
-
+        }else if (e.getSource() == Findsavedpassword) {
+            findPass();
         }
     }
 
@@ -197,24 +209,75 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
             if (!check.exists()) {
                 check.createNewFile();
             }
-            FileReader fr = new FileReader(FilePath);
-            String text1 = Files.readString(Paths.get(FilePath));
+            String forAcc = JOptionPane.showInputDialog("For which Service Are You Copying the Password For?");
+            String FinalText = forAcc+" = "+text;
             try {
                 FileWriter fw = new FileWriter(FilePath,true);
-                fw.write(text);
+                fw.write(FinalText);
                 fw.append("\n");
                 fw.close();
             }catch (IOException e) {
                 e.printStackTrace();
             }
             JOptionPane.showMessageDialog(this, "Password Saved", "Success", JOptionPane.INFORMATION_MESSAGE);
-            fr.close();
+
         }catch (FileNotFoundException e){
             JOptionPane.showMessageDialog(null, "File not found . ", "Error", JOptionPane.ERROR_MESSAGE);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void findPass(){
+        String FilePath = "PasswordSaves.txt";
+        try {
+            String fileContents = Files.readString(Path.of(FilePath));
+            String[] rawData = fileContents.split("\n");
+            int count = Integer.parseInt(String.valueOf(Files.lines(Path.of(FilePath)).count()));
+            String[] Accvalues = new String[count];
+            String[] Passwords = new String[count];
+            for (int i = 0; i < count; i++) {
+                String[] parts = rawData[i].split(" = ");
+                Accvalues[i] = parts[0];
+                Passwords[i] = parts[1];
+            }
+            for (String l : Accvalues) {
+                System.out.println(l);
+            }
+            for (String p : Passwords) {
+                System.out.println(p);
+            }
+            String Choice = JOptionPane.showInputDialog("Enter 1 For Searching \nEnter 2 for displaying the list \nEnter 3 for Exit. ");
+            switch (Choice) {
+                case "1":Search(count,Accvalues,Passwords);
+                         break;
+                case "2":Display(Accvalues);
+                         break;
+                case "3": break;
+                default: JOptionPane.showMessageDialog(null, "Invalid Choice", "Error", JOptionPane.ERROR_MESSAGE);
+                findPass();
+                break;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+    public void Search(int count,String[] Accvalues,String[] Passwords){
+        String textACC = JOptionPane.showInputDialog("Enter the Account for  which the Password u wanna  know !");
+        for (int i = 0; i < count; i++) {
+            if(textACC.equalsIgnoreCase(Accvalues[i])){
+                copyToClipboard(Passwords[i]);
+                JOptionPane.showMessageDialog(this, "Copied to clipboard", "Success", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+        }
+    }
+
+    public void Display(String[] ACC){
+        JOptionPane.showMessageDialog(null, ACC, "Success", JOptionPane.INFORMATION_MESSAGE);
+        findPass();
     }
 
     public static void main(String[] args) {
