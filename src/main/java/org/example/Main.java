@@ -39,6 +39,7 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
     private final JCheckBox specialCheckbox;
     private final JSlider lengthSlider;
     private final JTextField lengthTextField;
+    private JTextField NoOfGenerations;
     private final JButton generateButton;
     private final JButton copyButton;
     private final JButton copyandsave;
@@ -68,6 +69,9 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         lengthTextField = new JTextField(2);
         lengthTextField.setText(Integer.toString(lengthSlider.getValue()));
 
+        NoOfGenerations = new JTextField("No Of time you want the Passwords to be generated",2);
+        NoOfGenerations.setText("1");
+
         generateButton = new JButton("Generate Password");
         generateButton.addActionListener(this);
 
@@ -83,6 +87,8 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         passwordLabel = new JLabel();
 
         // Add components to the panel
+        panel.add(NoOfGenerations);
+        panel.add(new JLabel("Iterations of Password To be generated:"));
         panel.add(upperCaseCheckbox);
         panel.add(lowerCaseCheckbox);
         panel.add(digitsCheckbox);
@@ -125,8 +131,23 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
                 JOptionPane.showMessageDialog(this, "Please select at least one character set.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            int n = Integer.parseInt(NoOfGenerations.getText());
+            String[] passwords = new String[n];
+            String[] accounts = new String[n];
+            if(n > 1){
+                for(int i=0;i<n;i++){
+                    // Generate the password based on user preferences
+                    String password = generatePassword(passwordLength, includeUpperCase, includeLowerCase,includeDigits, includeSpecial);
+                    passwords[i] = password;
+                }
+                JOptionPane.showMessageDialog(null, passwords,"Generated multiple Passwords", JOptionPane.PLAIN_MESSAGE);
+                MultipleInput(passwords,accounts);
+                multiplesavetofile(accounts,passwords);
+                actionPerformed(null);
+            }
             // Generate the password based on user preferences
             String password = generatePassword(passwordLength, includeUpperCase, includeLowerCase,            includeDigits, includeSpecial);
+
             // Display the generated password
             passwordLabel.setText("Generated Password: " + password);
         } else if (e.getSource() == copyButton) {
@@ -156,6 +177,19 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         }
     }
 
+    public void MultipleInput(String[] passwords, String[] accounts) {
+        for (int i = 0; i < passwords.length; i++) {
+            String input = null;
+            while (input == null || input.trim().isEmpty()) {
+                input = JOptionPane.showInputDialog("Enter the text Email or a unique identifier for this: " + passwords[i]);
+                if (input == null || input.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Input cannot be empty. Please enter a valid input.");
+                }
+            }
+            accounts[i] = input;
+        }
+    }
+
     private String generatePassword(int length, boolean includeUpperCase, boolean includeLowerCase,
                                     boolean includeDigits, boolean includeSpecial) {
         StringBuilder characters = new StringBuilder();
@@ -175,7 +209,6 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         if (includeSpecial) {
             characters.append(CHARACTERS_SPECIAL);
         }
-
         // Generate the password by selecting random characters from the character set
         for (int i = 0; i < length; i++) {
             int index = random.nextInt(characters.length());
@@ -189,6 +222,37 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
         StringSelection selection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, null);
+        passwordLabel.setText("Copied Password is: " + text);
+    }
+
+    private void multiplesavetofile(String[] accounts,String[] passwords) {
+        String FilePath = "PasswordSaves.txt";
+        try {
+            File check = new File(FilePath);
+            if (!check.exists()) {
+                check.createNewFile();
+            }
+            String[] FinalTexts = new String[passwords.length];
+            for (int i = 0; i < passwords.length; i++) {
+                FinalTexts[i] = accounts[i]+" = "+passwords[i];
+            }
+            for(String FinalText: FinalTexts){
+                try {
+                    FileWriter fw = new FileWriter(FilePath,true);
+                    fw.write(FinalText);
+                    fw.append("\n");
+                    fw.close();
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            JOptionPane.showMessageDialog(this, "Password Saved", "Success", JOptionPane.INFORMATION_MESSAGE);
+        }catch (FileNotFoundException e){
+            JOptionPane.showMessageDialog(null, "File not found . ", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void savetofile(String text) {
