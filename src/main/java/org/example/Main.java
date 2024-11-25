@@ -39,7 +39,7 @@ public class Main extends JFrame implements ActionListener, ChangeListener {
     private final JCheckBox specialCheckbox;
     private final JSlider lengthSlider;
     private final JTextField lengthTextField;
-    private JTextField NoOfGenerations;
+    private final JTextField NoOfGenerations;
     private final JButton generateButton;
     private final JButton copyButton;
     private final JButton copyandsave;
